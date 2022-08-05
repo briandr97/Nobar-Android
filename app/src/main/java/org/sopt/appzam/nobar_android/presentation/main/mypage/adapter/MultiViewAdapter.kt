@@ -1,35 +1,64 @@
 package org.sopt.appzam.nobar_android.presentation.main.mypage.adapter
 
-import android.util.Log
 import android.view.LayoutInflater
+import android.view.View
 import android.view.ViewGroup
 import androidx.recyclerview.widget.DiffUtil
 import androidx.recyclerview.widget.ListAdapter
 import androidx.recyclerview.widget.RecyclerView
-import org.sopt.appzam.nobar_android.data.remote.response.MyPageTastingResponse
+import org.sopt.appzam.nobar_android.data.remote.response.TagResponse
+import org.sopt.appzam.nobar_android.data.remote.response.TastingNoteResponse
 import org.sopt.appzam.nobar_android.databinding.ItemMyPageTastingNoteBinding
 import org.sopt.appzam.nobar_android.databinding.ItemMyPageTastingNoteDateBinding
-import java.lang.RuntimeException
 
-class MultiViewAdapter :
-    ListAdapter<MyPageTastingResponse, RecyclerView.ViewHolder>(TastingNoteTagComparator()) {
+class MultiViewAdapter(private val itemClick: (TastingNoteResponse) -> Unit) :
+    ListAdapter<TastingNoteResponse, RecyclerView.ViewHolder>(TastingNoteTagComparator()) {
 
 
-    inner class DateViewHolder(private val binding: ItemMyPageTastingNoteDateBinding) :
+    class DateViewHolder(private val binding: ItemMyPageTastingNoteDateBinding) :
         RecyclerView.ViewHolder(binding.root) {
-        fun onBind(data: MyPageTastingResponse) {
+        fun onBind(data: TastingNoteResponse, itemClick: (TastingNoteResponse) -> Unit) {
             binding.tastingNoteDateItem = data
-
+            binding.ratingHeart.rating = data.rate.toFloat()
+            binding.ratingHeart.setOnTouchListener(View.OnTouchListener { v, event -> true })
             val recipeTagAdapter = TastingNoteTagAdapter()
             binding.recyclerTag.adapter = recipeTagAdapter
-            recipeTagAdapter.submitList(data.tag)
+
+            val tagList = mutableListOf<TagResponse>()
+
+            for (i in 0 until data.tag.count()) {
+                if (data.tag[i].isSelected)
+                    tagList.add(data.tag[i])
+            }
+
+            recipeTagAdapter.submitList(tagList)
+
+            itemView.setOnClickListener {
+                itemClick(data)
+            }
         }
     }
 
     inner class TastingViewHolder(private val binding: ItemMyPageTastingNoteBinding) :
         RecyclerView.ViewHolder(binding.root) {
-        fun onBind(data: MyPageTastingResponse) {
+        fun onBind(data: TastingNoteResponse, itemClick: (TastingNoteResponse) -> Unit) {
             binding.myPageTastingNoteItem = data
+            binding.ratingHeart.rating = data.rate.toFloat()
+            binding.ratingHeart.setOnTouchListener(View.OnTouchListener { v, event -> true })
+            val recipeTagAdapter = TastingNoteTagAdapter()
+
+            binding.recyclerTag.adapter = recipeTagAdapter
+            val tagList = mutableListOf<TagResponse>()
+
+            for (i in 0 until data.tag.count()) {
+                if (data.tag[i].isSelected)
+                    tagList.add(data.tag[i])
+            }
+            recipeTagAdapter.submitList(tagList)
+
+            itemView.setOnClickListener {
+                itemClick(data)
+            }
         }
     }
 
@@ -58,9 +87,9 @@ class MultiViewAdapter :
     }
 
     override fun onBindViewHolder(holder: RecyclerView.ViewHolder, position: Int) {
-        when(holder){
-            is DateViewHolder -> holder.onBind(getItem(position))
-            is TastingViewHolder -> holder.onBind(getItem(position))
+        when (holder) {
+            is DateViewHolder -> holder.onBind(getItem(position), itemClick)
+            is TastingViewHolder -> holder.onBind(getItem(position), itemClick)
             else -> throw IllegalArgumentException()
         }
     }
@@ -80,16 +109,16 @@ class MultiViewAdapter :
         const val TASTING_VIEW = 2
     }
 
-    class TastingNoteTagComparator : DiffUtil.ItemCallback<MyPageTastingResponse>() {
+    class TastingNoteTagComparator : DiffUtil.ItemCallback<TastingNoteResponse>() {
         override fun areItemsTheSame(
-            oldItem: MyPageTastingResponse,
-            newItem: MyPageTastingResponse
+            oldItem: TastingNoteResponse,
+            newItem: TastingNoteResponse
         ): Boolean =
             oldItem.id == newItem.id
 
         override fun areContentsTheSame(
-            oldItem: MyPageTastingResponse,
-            newItem: MyPageTastingResponse
+            oldItem: TastingNoteResponse,
+            newItem: TastingNoteResponse
         ): Boolean = oldItem == newItem
     }
 }

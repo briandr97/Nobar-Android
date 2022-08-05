@@ -1,5 +1,6 @@
 package org.sopt.appzam.nobar_android.presentation.main.search
 
+import android.app.Activity.RESULT_OK
 import android.content.Intent
 import android.os.Bundle
 import android.view.View
@@ -9,6 +10,12 @@ import org.sopt.appzam.nobar_android.data.remote.response.IngredientResponse
 import org.sopt.appzam.nobar_android.data.remote.response.RecipeResponse
 import org.sopt.appzam.nobar_android.databinding.FragmentSearchAfterTypingBinding
 import org.sopt.appzam.nobar_android.presentation.base.BaseFragment
+import org.sopt.appzam.nobar_android.presentation.main.record.RecordActivity
+import org.sopt.appzam.nobar_android.presentation.main.record.RecordWritingFragment.Companion.COCKTAIL_ID
+import org.sopt.appzam.nobar_android.presentation.main.record.RecordWritingFragment.Companion.COCKTAIL_NAME
+import org.sopt.appzam.nobar_android.presentation.main.search.SearchDetailActivity.Companion.FROM
+import org.sopt.appzam.nobar_android.presentation.main.search.SearchDetailActivity.Companion.NOTE
+import org.sopt.appzam.nobar_android.presentation.main.search.SearchDetailActivity.Companion.SEARCH
 import org.sopt.appzam.nobar_android.presentation.main.search.adapter.SearchAfterAdapter
 import org.sopt.appzam.nobar_android.presentation.main.search.adapter.SearchIngredientsAdapter
 import org.sopt.appzam.nobar_android.presentation.main.search.adapter.SearchResultAdapter
@@ -21,6 +28,7 @@ class SearchAfterTypingFragment :
     private lateinit var recipeAdapter: SearchAfterAdapter
     private lateinit var resultAdapter: SearchResultAdapter
     private lateinit var ingredientAdapter: SearchIngredientsAdapter
+
     private lateinit var recipeList: ArrayList<RecipeResponse>
     private lateinit var ingredientsList: ArrayList<IngredientResponse>
 
@@ -28,6 +36,7 @@ class SearchAfterTypingFragment :
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
         binding.viewmodel = searchDetailViewModel
+        checkFrom()
         initPreviewAdapter()
         initResultAdapter()
         initIngerdientsAdapter()
@@ -37,13 +46,42 @@ class SearchAfterTypingFragment :
         clickViewAll()
     }
 
-    private fun cocktailPreviewItemClick() {
+    private fun checkFrom() {
+        if (searchDetailViewModel.from == NOTE) {
+            binding.recyclerIngredients.visibility = View.GONE
+            binding.textIngredient.visibility = View.GONE
+        }
+        if (searchDetailViewModel.from == SEARCH) {
+            binding.recyclerIngredients.visibility = View.VISIBLE
+            binding.textIngredient.visibility = View.VISIBLE
+        }
+    }
+
+    private fun return2Note(cocktialName: String, cocktailId: String) {
+        val intent = Intent(requireActivity(), RecordActivity::class.java)
+        intent.putExtra(COCKTAIL_NAME, cocktialName)
+        intent.putExtra(COCKTAIL_ID, cocktailId)
+        activity?.setResult(RESULT_OK, intent)
+        activity?.finish()
+    }
+
+    private fun go2Recipe(cocktailId: String) {
         val intent = Intent(requireActivity(), RecipeActivity::class.java)
+        intent.putExtra("cocktailId", cocktailId)
         startActivity(intent)
     }
 
+    private fun cocktailPreviewItemClick(recipeResponse: RecipeResponse) {
+        if (searchDetailViewModel.from == NOTE) {
+            return2Note(recipeResponse.name, recipeResponse.id)
+        }
+        if (searchDetailViewModel.from == SEARCH) {
+            go2Recipe(recipeResponse.id)
+        }
+    }
+
     private fun initPreviewAdapter() {
-        recipeAdapter = SearchAfterAdapter { cocktailPreviewItemClick() }
+        recipeAdapter = SearchAfterAdapter { cocktailPreviewItemClick(it) }
         binding.recyclerPreview.adapter = recipeAdapter
     }
 
@@ -52,10 +90,13 @@ class SearchAfterTypingFragment :
         binding.recyclerResult.adapter = resultAdapter
     }
 
-    private fun clickResultItem(id: String) {
-        val intent = Intent(requireActivity(), RecipeActivity::class.java)
-        intent.putExtra("cocktailId", id)
-        startActivity(intent)
+    private fun clickResultItem(recipeResponse: RecipeResponse) {
+        if (searchDetailViewModel.from == NOTE) {
+            return2Note(recipeResponse.name, recipeResponse.id)
+        }
+        if (searchDetailViewModel.from == SEARCH) {
+            go2Recipe(recipeResponse.id)
+        }
     }
 
     private fun initIngerdientsAdapter() {
@@ -67,6 +108,7 @@ class SearchAfterTypingFragment :
         binding.textViewAll.setOnClickListener {
             val intent = Intent(requireActivity(), SearchResultActivity::class.java)
             intent.putExtra("id", searchDetailViewModel.shareKeyword)
+            intent.putExtra(FROM, searchDetailViewModel.from)
             startActivity(intent)
         }
     }

@@ -9,6 +9,8 @@ import android.view.View
 import android.view.ViewGroup
 import androidx.fragment.app.viewModels
 import org.sopt.appzam.nobar_android.R
+import org.sopt.appzam.nobar_android.data.remote.response.NobarRecipesResponse
+import org.sopt.appzam.nobar_android.data.remote.response.RecipeResponse
 import org.sopt.appzam.nobar_android.databinding.FragmentHomeBinding
 import org.sopt.appzam.nobar_android.presentation.base.BaseFragment
 import org.sopt.appzam.nobar_android.presentation.recipe.RecipeActivity
@@ -52,7 +54,7 @@ class HomeFragment : BaseFragment<FragmentHomeBinding>(R.layout.fragment_home) {
                 laterRecipeAdapter()
                 guideAdapter()
                 recipeAdapter()
-
+                initNetwork()
                 binding.layoutRefresh.isRefreshing = false
             }, 1000)
         }
@@ -69,7 +71,7 @@ class HomeFragment : BaseFragment<FragmentHomeBinding>(R.layout.fragment_home) {
         //레시피 클릭시 칵테일 상세보기로 이동로직
         laterRecipeAdapter = LaterRecipeAdapter {
             val intent = Intent(requireContext(), RecipeActivity::class.java)
-            intent.putExtra("recipeId", it.id)
+            intent.putExtra("cocktailId", it.id)
             startActivity(intent)
         }
         binding.recyclerToDoRecipe.adapter = laterRecipeAdapter
@@ -77,7 +79,7 @@ class HomeFragment : BaseFragment<FragmentHomeBinding>(R.layout.fragment_home) {
 
     private fun guideAdapter() {
         guideAdapter = GuideAdapter {
-            val intent = Intent(requireContext(), HomeLaterRecipeDetailActivity::class.java)
+            val intent = Intent(requireContext(), GuideDetailActivity::class.java)
             intent.putExtra("guideId", it.id)
             startActivity(intent)
         }
@@ -86,7 +88,8 @@ class HomeFragment : BaseFragment<FragmentHomeBinding>(R.layout.fragment_home) {
     }
 
     private fun recipeAdapter() {
-        val randomIntList = mutableListOf<Int>()
+        //색깔 랜덤 지정을 위한 로직
+        var randomIntList = mutableListOf<Int>()
         randomIntList.clear()
         while (randomIntList.count() < 5) {
             val num = Random.nextInt(0, 5)
@@ -98,12 +101,36 @@ class HomeFragment : BaseFragment<FragmentHomeBinding>(R.layout.fragment_home) {
 
         }
 
+        //데이터 랜덤을 위한 로직
+        val nobarList = listOf(
+            NobarRecipesResponse("62dafdc9c146e2cc2d52f3e8", R.string.homeAdapter1,R.drawable.ic_img_mojito),
+            NobarRecipesResponse("62dafdc9c146e2cc2d52f3e2", R.string.homeAdapter2, R.drawable.ic_img_bluehawaii),
+            NobarRecipesResponse("62dafdc9c146e2cc2d52f3d8", R.string.homeAdapter3, R.drawable.ic_img_sexonthebeach),
+            NobarRecipesResponse("62dafdc9c146e2cc2d52f422", R.string.homeAdapter4, R.drawable.ic_img_peachcrush),
+            NobarRecipesResponse("62dafdc9c146e2cc2d52f417", R.string.homeAdapter5, R.drawable.ic_img_cinderella)
+        )
+
+      /* var randomRecipeList = mutableListOf<Int>()
+        randomRecipeList.clear()
+        var nobarRecipeList = mutableListOf<NobarRecipesResponse>() //어뎁터에 전달할 리스트
+
+        randomRecipeList.clear() //데이터 랜덤 지정
+        while (randomReci9peList.count() < 5) {
+            val num = Random.nextInt(0, 5)
+            if (randomRecipeList.contains(num))
+                continue
+            else {
+                nobarRecipeList.add(nobarList[num])
+            }
+        }*/
+
         nobarRecipeAdapter = NobarRecipeAdapter(randomIntList) {
-            val intent = Intent(requireContext(), HomeLaterRecipeDetailActivity::class.java)
-            intent.putExtra("nobarRecipeId", it.id)
+            val intent = Intent(requireContext(), RecipeActivity::class.java)
+            intent.putExtra("cocktailId", it.id)
             startActivity(intent)
         }
         binding.recyclerNobarRecipe.adapter = nobarRecipeAdapter
+        nobarRecipeAdapter.submitList(nobarList)
     }
 
     //viewModel 관련
@@ -123,9 +150,9 @@ class HomeFragment : BaseFragment<FragmentHomeBinding>(R.layout.fragment_home) {
             guideAdapter.submitList(it)
         }
 
-        homeViewModel.nobarRecipeList.observe(viewLifecycleOwner) {
-            nobarRecipeAdapter.submitList(it)
-        }
+        /* homeViewModel.nobarRecipeList.observe(viewLifecycleOwner) {
+             nobarRecipeAdapter.submitList(it)
+         }*/
     }
 
     //스크롤 했을 때 선 생기도록 설정

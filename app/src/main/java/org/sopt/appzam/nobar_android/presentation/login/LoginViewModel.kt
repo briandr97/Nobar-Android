@@ -29,7 +29,7 @@ class LoginViewModel(
         val currentNickname = nickname.value.orEmpty()
         nobarService.login(LoginParams(currentNickname))
                 .onSuccess {
-                    authTokenManager.saveNobarToken(NobarAccessToken(it.accessToken))
+                    authTokenManager.saveNobarToken(NobarAccessToken(it.accesstoken))
                     _isSuccess.value = true
                 }
                 .onFailure {

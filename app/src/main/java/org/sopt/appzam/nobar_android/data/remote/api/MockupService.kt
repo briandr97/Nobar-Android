@@ -1,7 +1,10 @@
 package org.sopt.appzam.nobar_android.data.remote.api
 
+import org.sopt.appzam.nobar_android.data.remote.params.TastingNoteParams
+import org.sopt.appzam.nobar_android.data.remote.params.LoginParams
 import org.sopt.appzam.nobar_android.data.remote.response.*
 import retrofit2.Call
+import retrofit2.Response
 import retrofit2.http.*
 
 interface MockupService {
@@ -32,14 +35,32 @@ interface MockupService {
     @GET("/search")
     fun getSearchKeywords(): Call<SearchKeywordsResponse>
 
-    @GET("search/keyword")
+    @GET("/search/keyword")
     fun getSearchResult(
-        @Query("keyword") keyword : String
-    ):Call<SearchResultResponse>
+        @Query("keyword") keyword: String
+    ): Call<SearchResultResponse>
 
-    @PATCH("recipe/{recipeId}")
+    @PATCH("/recipe/{recipeId}")
     fun patchScrap(
-        @Path("recipeId")recipeId: String,
-        @Body body : Boolean
-    ):Call<RecipeDetailResponse>
+        @Path("recipeId") recipeId: String,
+        @Body body: Boolean
+    ): Call<RecipeDetailResponse>
+
+    @GET("/note/tag")
+    fun getTagList(): Call<List<TagResponse>>
+
+    @GET("/note/{tastingNoteId}")
+    fun getNote(
+        @Path("tastingNoteId") tastingNoteId: String
+    ): Call<TastingNoteResponse>
+
+    @POST("/note")
+    fun postNote(
+        @Body body: TastingNoteParams
+    ): Call<TastingNoteResponse>
+
+    @POST("/auth")
+    suspend fun login(
+        @Body loginParams: LoginParams,
+    ): Response<LoginResponse>
 }

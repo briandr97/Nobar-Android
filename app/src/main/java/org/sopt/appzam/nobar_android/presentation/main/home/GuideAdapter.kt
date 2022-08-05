@@ -1,10 +1,12 @@
 package org.sopt.appzam.nobar_android.presentation.main.home
 
+import android.util.Log
 import android.view.LayoutInflater
 import android.view.ViewGroup
 import androidx.recyclerview.widget.DiffUtil
 import androidx.recyclerview.widget.ListAdapter
 import androidx.recyclerview.widget.RecyclerView
+import org.sopt.appzam.nobar_android.R
 import org.sopt.appzam.nobar_android.data.remote.response.GuideResponse
 import org.sopt.appzam.nobar_android.databinding.ItemHomeGuideBinding
 
@@ -16,9 +18,17 @@ class GuideAdapter(private val itemClick: (GuideResponse) -> (Unit)) :
         private val itemClick: (GuideResponse) -> Unit
     ) :
         RecyclerView.ViewHolder(binding.root) {
-        fun onBind(data: GuideResponse) {
+        fun onBind(data: GuideResponse, position: Int) {
             binding.guideItem = data
-            binding.root.setOnClickListener{
+            Log.d("dd", position.toString())
+            when (position % 5) {
+                0 -> binding.imageGuide.setImageResource(R.drawable.img_guide_base)
+                1 -> binding.imageGuide.setImageResource(R.drawable.img_guide_deco)
+                2 -> binding.imageGuide.setImageResource(R.drawable.img_guide_price)
+                3 -> binding.imageGuide.setImageResource(R.drawable._img_guide_glass)
+                4 -> binding.imageGuide.setImageResource(R.drawable.img_guide_daiso)
+            }
+            binding.root.setOnClickListener {
                 itemClick(data)
             }
         }
@@ -31,7 +41,7 @@ class GuideAdapter(private val itemClick: (GuideResponse) -> (Unit)) :
     }
 
     override fun onBindViewHolder(holder: GuideViewHolder, position: Int) {
-        holder.onBind(getItem(position))
+        holder.onBind(getItem(position), position)
     }
 
     companion object {

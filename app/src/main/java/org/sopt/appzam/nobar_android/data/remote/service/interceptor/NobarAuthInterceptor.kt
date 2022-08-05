@@ -7,7 +7,6 @@ import org.sopt.appzam.nobar_android.data.local.db.AuthTokenManager
 class NobarAuthInterceptor(
         private val nobarTokenManager: AuthTokenManager,
 ) : Interceptor {
-
     override fun intercept(chain: Interceptor.Chain): Response {
         val nobarToken = nobarTokenManager.getNobarToken()?.accessToken
                 ?: return chain.proceed(chain.request())
